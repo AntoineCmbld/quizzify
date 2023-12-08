@@ -86,6 +86,11 @@ app.get('/api/quizzes', (req, res) => {
 app.post('/create-quiz', (req, res) => {
   const { quizTitle, quizDescription, questions } = req.body;
 
+  // Check if 'questions' is an array
+  if (!Array.isArray(questions)) {
+    return res.status(400).send('Invalid format for questions array');
+  }
+
   // Insert quiz data into the database
   const insertQuizQuery = 'INSERT INTO quizzes (title, description, instructor_id) VALUES (?, ?, ?)';
   // Assuming the instructor ID is stored in the session when the user logs in
@@ -101,6 +106,11 @@ app.post('/create-quiz', (req, res) => {
     // Insert questions and answers into the database
     questions.forEach((question) => {
       const { questionText, answers } = question;
+
+      // Check if 'answers' is an array
+      if (!Array.isArray(answers)) {
+        return res.status(400).send('Invalid format for answers array');
+      }
 
       // Insert question data into the database
       const insertQuestionQuery = 'INSERT INTO questions (quiz_id, question_text) VALUES (?, ?)';
@@ -130,7 +140,6 @@ app.post('/create-quiz', (req, res) => {
     res.send('Quiz created successfully!');
   });
 });
-
 app.post('/submit-quiz', (req, res) => {
   // Implement quiz submission logic on the server
   // You can access the user's responses from req.body

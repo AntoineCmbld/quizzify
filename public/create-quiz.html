@@ -26,15 +26,13 @@
     </div>
 
     <button type="button" onclick="addQuestion()">Add Question</button>
-    <button type="submit">Create Quiz</button>
+    <button type="submit" disabled>Create Quiz</button>
   </form>
 
   <script>
     let questionCount = 0;
 
     function addQuestion() {
-      questionCount++;
-
       const questionsContainer = document.getElementById('questions-container');
       const questionDiv = document.createElement('div');
       questionDiv.innerHTML = `
@@ -52,6 +50,8 @@
       `;
       questionsContainer.appendChild(questionDiv);
       updateQuestionNumbers();
+      updateSubmitButton(); // Add this line to enable/disable submit button
+      questionCount++;
     }
 
     function renderAnswerInput(questionNumber, answerNumber) {
@@ -59,19 +59,23 @@
         <div>
           <label for="answer${questionNumber}-${answerNumber}">Answer ${answerNumber}:</label>
           <input type="text" id="answer${questionNumber}-${answerNumber}" name="questions[${questionNumber}][answers][${answerNumber - 1}][answerText]" required>
+          <input type="checkbox" id="correctAnswer${questionNumber}-${answerNumber}" name="questions[${questionNumber}][answers][${answerNumber - 1}][isCorrect]">
+          <label for="correctAnswer${questionNumber}-${answerNumber}">Correct Answer</label>
           <button type="button" onclick="removeAnswer(${questionNumber}, ${answerNumber})">Remove Answer</button>
         </div>
       `;
     }
 
     function removeQuestion(questionNumber) {
-      const questionLine = document.getElementById(`question-line${questionNumber}`);
-      if (questionLine) {
-        questionLine.parentNode.removeChild(questionLine);
-        updateQuestionNumbers();
-        updateAnswerNumbers();
-      }
-    }
+  const questionLine = document.getElementById(`question-line${questionNumber}`);
+  if (questionLine) {
+    questionLine.parentNode.removeChild(questionLine);
+    updateQuestionNumbers();
+    updateAnswerNumbers();
+    updateSubmitButton(); // Add this line to enable/disable submit button
+  }
+  questionCount--;
+}
 
     function updateQuestionNumbers() {
       const questionLines = document.querySelectorAll('[id^="question-line"]');
@@ -109,15 +113,25 @@
     }
 
     function removeAnswer(questionNumber, answerNumber) {
-  const answerId = `answer${questionNumber}-${answerNumber}`;
-  const answerInput = document.getElementById(answerId);
+      const answersContainer = document.getElementById(`answers-container${questionNumber}`);
+      const existingAnswerInputs = answersContainer.querySelectorAll('label[for^="answer"]');
+      const nextAnswerNumber = existingAnswerInputs.length - 1;
 
-  if (answerInput) {
-    const answerContainer = answerInput.parentNode;
-    answerContainer.parentNode.removeChild(answerContainer);
-    updateAnswerNumbers(); // Update answer numbers after removal
-  }
-}
+      // Check if there are at least 2 answers remaining before removal
+      if (nextAnswerNumber >= 2) {
+        const answerId = `answer${questionNumber}-${answerNumber}`;
+        const answerInput = document.getElementById(answerId);
+
+        if (answerInput) {
+          const answerContainer = answerInput.parentNode;
+          answerContainer.parentNode.removeChild(answerContainer);
+          updateAnswerNumbers();
+          updateSubmitButton(); // Add this line to enable/disable submit button
+        }
+      } else {
+        alert('You must have at least 2 answers for a question.');
+      }
+    }
 
     function updateAnswerNumbers() {
       const questionLines = document.querySelectorAll('[id^="question-line"]');
@@ -134,6 +148,14 @@
           button.setAttribute('onclick', `removeAnswer(${questionNumber}, ${answerIndex + 1})`);
         });
       });
+    }
+
+    function updateSubmitButton() {
+      const submitButton = document.querySelector('[type="submit"]');
+      const questionCount = document.querySelectorAll('[id^="question-line"]').length;
+
+      // Enable or disable the submit button based on the number of questions
+      submitButton.disabled = questionCount === 0;
     }
 
   </script>

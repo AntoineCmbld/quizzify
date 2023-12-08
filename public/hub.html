@@ -75,6 +75,8 @@
     <a href="/login">Login</a>
     <a href="/dashboard">Dashboard</a>
     <a href="/hub">Quiz Hub</a>
+        <!-- Button to create quiz (visible for instructors) -->
+    <a href="/create-quiz" id="create-quiz-btn" style="display: none;">Create Quiz</a>
 </nav>
 
 <section>
@@ -83,15 +85,17 @@
     <!-- Search bar -->
     <input type="text" id="search-input" placeholder="Search quizzes...">
 
+
     <script>
         document.addEventListener("DOMContentLoaded", async function () {
             const quizListContainer = document.getElementById('quiz-list-container');
-            const userInfoContainer = document.getElementById('user-info'); // New line
+            const userInfoContainer = document.getElementById('user-info');
+            const createQuizBtn = document.getElementById('create-quiz-btn');
     
             // Fetch quizzes from the server (you need to implement this endpoint in your Node.js server)
             const response = await fetch('/api/quizzes');
             const quizzes = await response.json();
-
+    
             // Display quizzes in the container
             quizzes.forEach(quiz => {
                 const quizItem = document.createElement('div');
@@ -110,6 +114,15 @@
     
             if (userData.username) {
                 userInfoContainer.innerText = `Welcome, ${userData.username}!`; // Display username
+    
+                // Check if the user is an instructor and show the create quiz button
+                if (userData.role === 'instructor') {
+                    createQuizBtn.style.display = 'block';
+                    createQuizBtn.addEventListener('click', () => {
+                        // Redirect to the create quiz page or handle the creation logic
+                        window.location.href = '/create-quiz';
+                    });
+                }
             }
     
             function handleSearch() {
@@ -129,7 +142,6 @@
             }
         });
     </script>
-    
 </section>
 
 </body>

@@ -5,10 +5,106 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Quiz Page</title>
   <style>
-    /* Add your styles here */
+    body {
+    font-family: 'Helvetica Neue', sans-serif;
+    background-color: #202020;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+header {
+    background-color: #202020;
+    padding: 10px;
+    text-align: center;
+    color: #ac1db9;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+nav {
+    background-color: #7e1588;
+    overflow: hidden;
+    border-radius: 5px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+}
+
+nav a {
+    display: inline-block;
+    color: #fff;
+    text-align: center;
+    padding: 15px 50px 15px;
+    border: 2px solid #fff;
+    border-radius: 5px;
+    text-decoration: none;
+    margin-right: 15px;
+    transition: border-color 0.3s ease;
+}
+
+nav a:hover {
+    background-color: #7e1588;
+    border-color: #7e1588;
+    color: #fff;
+    text-decoration: none;
+}
+
+h2 {
+    text-align: center;
+    color: #fff;
+}
+
+form {
+    max-width: 600px;
+    width: 100%;
+}
+
+button {
+    padding: 10px;
+    background-color: #ac1db9;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    border: 2px solid #fff;
+}
+
+button:hover {
+    background-color: #7e1588;
+    border-color: #7e1588;
+    color: #fff;
+    text-decoration: none;
+}
+
+#quiz-container {
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+    padding: 20px;
+    background-color: #333;
+    border-radius: 10px;
+    box-sizing: border-box;
+    border: 2px solid #fff;
+}
+
   </style>
 </head>
 <body>
+
+  <header>
+    <img src="/assets/Quizzify_logo.png" alt="Quizzify_logo">
+    <div id="user-info"></div>
+</header>
+
+<nav>
+<a  href="/">Home</a>
+<a href="/hub">Quizz Hub</a>
+</nav>
 
   <div id="quiz-container">
     <h2 id="quiz-title"></h2>
@@ -16,65 +112,103 @@
 
     <div id="questions-container"></div>
 
-    <button onclick="submitQuiz()">Submit Quiz</button>
+    <button id="submit-button" onclick="submitQuiz()">Submit Quiz</button>
   </div>
 
   <script>
     // Get the quiz ID from the URL
-const quizId = window.location.pathname.split('/').pop();
+    const quizId = window.location.pathname.split('/').pop();
+    let quizData;
+
+// Disable the submit button initially
+const submitButton = document.getElementById('submit-button');
+submitButton.disabled = true;
 
 // Fetch quiz data from the server
 fetch(`/api/quiz/${quizId}`)
   .then(response => response.json())
-  .then(quizData => {
-        // Populate quiz details
-        document.getElementById('quiz-title').textContent = quizData.title;
-        document.getElementById('quiz-description').textContent = quizData.description;
+  .then(data => {
+    quizData = data;
+    // Populate quiz details
+    document.getElementById('quiz-title').textContent = quizData.title;
+    document.getElementById('quiz-description').textContent = quizData.description;
 
-        // Populate questions
-        const questionsContainer = document.getElementById('questions-container');
-        quizData.questions.forEach((question, index) => {
-          const questionElement = document.createElement('div');
-          questionElement.innerHTML = `
-            <p>${index + 1}. ${question.question_text}</p>
-            ${question.question_type === 'multiple_choice' ? renderMultipleChoice(question) : renderTrueFalse(question)}
-          `;
-          questionsContainer.appendChild(questionElement);
-        });
-      })
-      .catch(error => {
-        console.error('Error fetching quiz data:', error);
-        alert('Error fetching quiz data. Please try again.');
-      });
-
-    function renderMultipleChoice(question) {
-      return question.choices.map(choice => `
-        <label>
-          <input type="radio" name="question${question.question_id}" value="${choice}">
-          ${choice}
-        </label>
-      `).join('');
-    }
-
-    function renderTrueFalse(question) {
-      return `
-        <label>
-          <input type="radio" name="question${question.question_id}" value="true">
-          True
-        </label>
-        <label>
-          <input type="radio" name="question${question.question_id}" value="false">
-          False
-        </label>
+    // Populate questions
+    const questionsContainer = document.getElementById('questions-container');
+    quizData.questions.forEach((question, index) => {
+      const questionElement = document.createElement('div');
+      questionElement.innerHTML = `
+        <p>${index + 1}. ${question.question_text}</p>
+        ${renderMultipleChoice(question)}
       `;
-    }
+      questionsContainer.appendChild(questionElement);
+    });
 
-    function submitQuiz() {
-      // Implement quiz submission logic here
-      // You can use JavaScript to gather user responses and send them to the server
-      // This is a basic example and needs further implementation based on your server structure
-      alert('Quiz submitted! Implement the submission logic.');
+    // Enable the submit button after data is loaded
+    submitButton.disabled = false;
+
+    // Implement quiz submission logic here
+    submitButton.onclick = () => submitQuiz();
+  })
+  .catch(error => {
+    console.error('Error fetching quiz data:', error);
+    alert('Error fetching quiz data. Please try again.');
+  });
+
+  function renderMultipleChoice(question) {
+  return question.options.map((option, optionIndex) => `
+    <label>
+      <input type="checkbox" id="question${question.question_id}_option${optionIndex}" name="question${question.question_id}" value="${option.option_text}">
+      ${option.option_text}
+    </label>
+  `).join('');
+}
+
+function submitQuiz() {
+  // Gather user responses
+  const userResponses = [];
+  const questionsContainer = document.getElementById('questions-container');
+  const questionElements = questionsContainer.querySelectorAll('div');
+
+  questionElements.forEach((questionElement, index) => {
+    const checkboxes = questionElement.querySelectorAll(`input[type="checkbox"][name="question${quizData.questions[index].question_id}"]:checked`);
+    const userSelectedOptions = Array.from(checkboxes).map(checkbox => checkbox.value);
+
+    userResponses.push({
+      question_id: quizData.questions[index].question_id,
+      userSelectedOptions: userSelectedOptions
+    });
+  });
+
+  // Check if userResponses is not empty
+  if (userResponses.length > 0) {
+    // Send user responses to the server for evaluation
+    fetch(`/api/submit-quiz/${quizId}`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ userResponses }),
+})
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
     }
+    return response.json();
+  })
+  .then(result => {
+    // Handle the result from the server (e.g., display score or feedback)
+    alert(`Quiz submitted! Your score: ${result.score}`);
+  })
+  .catch(error => {
+    console.error('Error submitting quiz:', error);
+    alert('Error submitting quiz. Please try again.');
+  });
+  } else {
+    // Handle the case where userResponses is empty
+    alert('Please select at least one answer before submitting the quiz.');
+  }
+}
   </script>
 
 </body>

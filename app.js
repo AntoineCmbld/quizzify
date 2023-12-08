@@ -24,6 +24,7 @@ db.connect((err) => {
 });
 
 // Middleware
+app.use(express.json());
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session({ secret: 'your-secret-key', resave: true, saveUninitialized: true }));
@@ -152,6 +153,58 @@ app.get('/api/quiz/:quizId', (req, res) => {
     });
   });
 });
+
+app.post('/api/submit-quiz/:quizId', async (req, res) => {
+  const quizId = req.params.quizId;
+  const userResponses = req.body.userResponses;
+
+  // Check if userResponses is an array
+  if (!Array.isArray(userResponses)) {
+    return res.status(400).json({ error: 'Invalid format for userResponses' });
+  }
+
+  try {
+    // For each question in userResponses, check correctness
+    const scorePromises = userResponses.map(async (response) => {
+      const { question_id, userSelectedOptions } = response;
+
+      // Retrieve correct options from the database
+      const selectCorrectOptionsQuery = 'SELECT option_text FROM options WHERE question_id = ? AND is_correct = true';
+      const correctOptionsResults = await new Promise((resolve, reject) => {
+        db.query(selectCorrectOptionsQuery, [question_id], (err, results) => {
+          if (err) {
+            console.error('Error fetching correct options:', err);
+            reject(err);
+          } else {
+            resolve(results);
+          }
+        });
+      });
+
+      const correctOptions = correctOptionsResults.map(option => option.option_text);
+
+      // Check if user's selected options match the correct options
+      return arraysEqual(userSelectedOptions, correctOptions) ? 1 : 0;
+    });
+
+    // Wait for all score promises to resolve
+    const scores = await Promise.all(scorePromises);
+
+    // Calculate the total score
+    const totalScore = scores.reduce((acc, score) => acc + score, 0);
+
+    // Send the total score to the client
+    res.json({ score: totalScore });
+  } catch (error) {
+    console.error('Error submitting quiz:', error);
+    res.status(500).send('Error evaluating quiz');
+  }
+});
+
+// Helper function to check if two arrays are equal
+function arraysEqual(arr1, arr2) {
+  return arr1.length === arr2.length && arr1.every((value, index) => value === arr2[index]);
+}
 
 // Implement routes for handling quiz creation and submission on the server
 app.post('/create-quiz', (req, res) => {

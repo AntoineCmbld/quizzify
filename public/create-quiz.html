@@ -3,21 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style/style_hub.css">
   <title>Create Quiz</title>
   <style>
     /* Add your styles here */
   </style>
 </head>
-<header>
-    <img src="assets/Quizzify_logo.png" alt="Quizzify_logo"> 
-</header>
-
-<nav>
-    <a href="/">Home</a>
-    <a href="/hub">Quiz Hub</a>
-</nav>
-
 <body>
 
   <h2>Create a Quiz</h2>
@@ -70,23 +60,26 @@
     <div>
       <label for="answer${questionNumber}-${answerNumber}">Answer ${answerNumber}:</label>
       <input type="text" id="answer${questionNumber}-${answerNumber}" name="questions[${questionNumber}][answers][${answerNumber - 1}][answerText]" required>
-      <input type="checkbox" id="correctAnswer${questionNumber}-${answerNumber}" name="questions[${questionNumber}][answers][${answerNumber - 1}][isCorrect]">
+      <input type="checkbox" id="correctAnswer${questionNumber}-${answerNumber}" name="questions[${questionNumber + 1}][correctAnswer]" value="${answerNumber - 1}">
       <label for="correctAnswer${questionNumber}-${answerNumber}">Correct Answer</label>
       <button type="button" onclick="removeAnswer(${questionNumber}, ${answerNumber})">Remove Answer</button>
     </div>
   `;
 }
 
-    function removeQuestion(questionNumber) {
-      const questionLine = document.getElementById(`question-line${questionNumber}`);
-      if (questionLine) {
-        questionLine.parentNode.removeChild(questionLine);
-        updateQuestionNumbers();
-        updateAnswerNumbers();
-        updateSubmitButton();
-      }
-      questionCount--;
-    }
+function removeQuestion(questionNumber) {
+  const questionLine = document.getElementById(`question-line${questionNumber}`);
+  if (questionLine) {
+    questionLine.parentNode.removeChild(questionLine);
+    updateQuestionNumbers();
+    updateAnswerNumbers();
+    updateSubmitButton();
+  }
+  questionCount--;
+
+  // Ensure the removed question is not submitted with the form
+  updateSubmitButton();
+}
 
     function updateQuestionNumbers() {
       const questionLines = document.querySelectorAll('[id^="question-line"]');

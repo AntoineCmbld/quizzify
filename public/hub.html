@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Hub</title>
+    <link rel="stylesheet" href="style/style_hub.css">
+</head>
+<body>
+    <header>
+        <img src="assets/Quizzify_logo.png" alt="Quizzify_logo"> 
+        <div id="user-info"></div> <!-- New div to display user information -->
+    </header>
+
+  <nav>
+      <a href="/">Home</a>
+      <a href="/hub">Quiz Hub</a>
+          <!-- Button to create quiz (visible for instructors) -->
+      <a href="/create-quiz" id="create-quiz-btn" style="display: none;">Create Quiz</a>
+
+  </nav>
+
+  <section>
+      <div id="quiz-list-container"></div>
+
+      <!-- Search bar -->
+      <input type="text" id="search-input" placeholder="Search quizzes...">
+
+
+      <script>
+          document.addEventListener("DOMContentLoaded", async function () {
+              const quizListContainer = document.getElementById('quiz-list-container');
+              const userInfoContainer = document.getElementById('user-info');
+              const createQuizBtn = document.getElementById('create-quiz-btn');
+
+              // Fetch quizzes from the server (you need to implement this endpoint in your Node.js server)
+              const response = await fetch('/api/quizzes');
+              const quizzes = await response.json();
+
+              // Display quizzes in the container
+              quizzes.forEach(quiz => {
+                  const quizItem = document.createElement('div');
+                  quizItem.classList.add('quiz-item');
+                  quizItem.innerHTML = `<h3>${quiz.title}</h3><p>${quiz.description}</p>`;
+                  quizListContainer.appendChild(quizItem);
+              });
+
+              // Add search functionality (you may need to implement this)
+              const searchInput = document.getElementById('search-input');
+              searchInput.addEventListener('input', handleSearch);
+
+              // Check if user is logged in and display username
+              const user = await fetch('/api/user'); // Assuming you have an endpoint to fetch user details
+              const userData = await user.json();
+
+              if (userData.username) {
+                  userInfoContainer.innerText = `Welcome, ${userData.username}!`; // Display username
+
+                  // Check if the user is an instructor and show the create quiz button
+                  if (userData.role === 'instructor') {
+                      createQuizBtn.style.display = 'block';
+                      createQuizBtn.addEventListener('click', () => {
+                          // Redirect to the create quiz page or handle the creation logic
+                          window.location.href = '/create-quiz';
+                      });
+                  }
+              }
+
+              function handleSearch() {
+                  const searchTerm = searchInput.value.toLowerCase();
+                  const quizItems = document.querySelectorAll('.quiz-item');
+
+                  quizItems.forEach(item => {
+                      const quizTitle = item.querySelector('h3').innerText.toLowerCase();
+                      const quizDescription = item.querySelector('p').innerText.toLowerCase();
+
+                      if (quizTitle.includes(searchTerm) || quizDescription.includes(searchTerm)) {
+                          item.style.display = 'block';
+                      } else {
+                          item.style.display = 'none';
+                      }
+                  });
+              }
+          });
+      </script>
+  </section>
+
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style/style_hub.css">
+  <title>Create Quiz</title>
+  <style>
+    /* Add your styles here */
+  </style>
+</head>
+<header>
+    <img src="assets/Quizzify_logo.png" alt="Quizzify_logo"> 
+</header>
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/hub">Quiz Hub</a>
+</nav>
+
+<body>
+
+  <h2>Create a Quiz</h2>
+
+  <form id="quiz-form" method="post">
+    <label for="quiz-title">Title:</label>
+    <input type="text" id="quiz-title" name="quizTitle" required>
+    
+    <label for="quiz-description">Description:</label>
+    <textarea id="quiz-description" name="quizDescription" rows="4"></textarea>
+
+    <h3>Questions</h3>
+
+    <div id="questions-container">
+      <!-- Question fields will be dynamically added here -->
+    </div>
+
+    <button type="button" onclick="addQuestion()">Add Question</button>
+    <button type="submit" disabled>Create Quiz</button>
+  </form>
+
+  <script>
+    
+    let questionCount = 0;
+
+    function addQuestion() {
+      const questionsContainer = document.getElementById('questions-container');
+      const questionDiv = document.createElement('div');
+      questionDiv.innerHTML = `
+        <div id="question-line${questionCount}">
+          <label for="question${questionCount}">Question ${questionCount}:</label>
+          <input type="text" id="question${questionCount}" name="questions[${questionCount}][questionText]" required>
+
+          <div id="answers-container${questionCount}">
+            ${renderAnswerInput(questionCount, 1)}
+            ${renderAnswerInput(questionCount, 2)}
+            <button type="button" onclick="addAnswer(${questionCount})">Add Answer</button>
+          </div>
+          <button type="button" onclick="removeQuestion(${questionCount})">Remove Question</button>
+        </div>
+      `;
+      questionsContainer.appendChild(questionDiv);
+      updateQuestionNumbers();
+      updateSubmitButton();
+      questionCount++;
+    }
+
+    function renderAnswerInput(questionNumber, answerNumber) {
+  return `
+    <div>
+      <label for="answer${questionNumber}-${answerNumber}">Answer ${answerNumber}:</label>
+      <input type="text" id="answer${questionNumber}-${answerNumber}" name="questions[${questionNumber}][answers][${answerNumber - 1}][answerText]" required>
+      <input type="checkbox" id="correctAnswer${questionNumber}-${answerNumber}" name="questions[${questionNumber}][answers][${answerNumber - 1}][isCorrect]">
+      <label for="correctAnswer${questionNumber}-${answerNumber}">Correct Answer</label>
+      <button type="button" onclick="removeAnswer(${questionNumber}, ${answerNumber})">Remove Answer</button>
+    </div>
+  `;
+}
+
+    function removeQuestion(questionNumber) {
+      const questionLine = document.getElementById(`question-line${questionNumber}`);
+      if (questionLine) {
+        questionLine.parentNode.removeChild(questionLine);
+        updateQuestionNumbers();
+        updateAnswerNumbers();
+        updateSubmitButton();
+      }
+      questionCount--;
+    }
+
+    function updateQuestionNumbers() {
+      const questionLines = document.querySelectorAll('[id^="question-line"]');
+      questionLines.forEach((line, index) => {
+        const questionNumber = index + 1;
+        line.id = `question-line${questionNumber}`;
+        line.querySelector('label[for^="question"]').textContent = `Question ${questionNumber}`;
+        line.querySelector('input[id^="question"]').id = `question${questionNumber}`;
+        line.querySelector('input[name^="questions"]').name = `questions[${questionNumber}][questionText]`;
+        line.querySelector('div[id^="answers-container"]').id = `answers-container${questionNumber}`;
+        line.querySelectorAll('label[for^="answer"]').forEach((label, answerIndex) => {
+          label.textContent = `Answer ${answerIndex + 1}:`;
+        });
+        line.querySelectorAll('input[id^="answer"]').forEach((input, answerIndex) => {
+          input.id = `answer${questionNumber}-${answerIndex + 1}`;
+          input.name = `questions[${questionNumber}][answers][${answerIndex}][answerText]`;
+        });
+        line.querySelectorAll('button[onclick^="removeAnswer"]').forEach((button, answerIndex) => {
+          button.setAttribute('onclick', `removeAnswer(${questionNumber}, ${answerIndex + 1})`);
+        });
+        line.querySelector('button[onclick^="addAnswer"]').setAttribute('onclick', `addAnswer(${questionNumber})`);
+        line.querySelector('button[onclick^="removeQuestion"]').setAttribute('onclick', `removeQuestion(${questionNumber})`);
+      });
+    }
+
+    function addAnswer(questionNumber) {
+      const answersContainer = document.getElementById(`answers-container${questionNumber}`);
+      const existingAnswerInputs = answersContainer.querySelectorAll('label[for^="answer"]');
+      const nextAnswerNumber = existingAnswerInputs.length + 1;
+      const newAnswerInput = document.createElement('div');
+      newAnswerInput.innerHTML = renderAnswerInput(questionNumber, nextAnswerNumber);
+      answersContainer.insertBefore(newAnswerInput, answersContainer.lastElementChild);
+      updateAnswerNumbers();
+    }
+
+    function removeAnswer(questionNumber, answerNumber) {
+      const answersContainer = document.getElementById(`answers-container${questionNumber}`);
+      const existingAnswerInputs = answersContainer.querySelectorAll('label[for^="answer"]');
+      const nextAnswerNumber = existingAnswerInputs.length - 1;
+
+      if (nextAnswerNumber >= 2) {
+        const answerId = `answer${questionNumber}-${answerNumber}`;
+        const answerInput = document.getElementById(answerId);
+
+        if (answerInput) {
+          const answerContainer = answerInput.parentNode;
+          answerContainer.parentNode.removeChild(answerContainer);
+          updateAnswerNumbers();
+          updateSubmitButton();
+        }
+      } else {
+        alert('You must have at least 2 answers for a question.');
+      }
+    }
+
+    function updateAnswerNumbers() {
+      const questionLines = document.querySelectorAll('[id^="question-line"]');
+      questionLines.forEach((line, index) => {
+        const questionNumber = index + 1;
+        line.querySelectorAll('label[for^="answer"]').forEach((label, answerIndex) => {
+          label.textContent = `Answer ${answerIndex + 1}:`;
+        });
+        line.querySelectorAll('input[id^="answer"]').forEach((input, answerIndex) => {
+          input.id = `answer${questionNumber}-${answerIndex + 1}`;
+          input.name = `questions[${questionNumber}][answers][${answerIndex}][answerText]`;
+        });
+        line.querySelectorAll('button[onclick^="removeAnswer"]').forEach((button, answerIndex) => {
+          button.setAttribute('onclick', `removeAnswer(${questionNumber}, ${answerIndex + 1})`);
+        });
+      });
+    }
+
+    function updateSubmitButton() {
+      const submitButton = document.querySelector('[type="submit"]');
+      const questionCount = document.querySelectorAll('[id^="question-line"]').length;
+
+      submitButton.disabled = questionCount === 0;
+    }
+
+  </script>
+
+</body>
+</html>

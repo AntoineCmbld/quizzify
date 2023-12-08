@@ -12,12 +12,12 @@
 
   <h2>Create a Quiz</h2>
 
-  <form id="quiz-form" onsubmit="createQuiz(event)">
+  <form id="quiz-form" method="post">
     <label for="quiz-title">Title:</label>
-    <input type="text" id="quiz-title" name="quiz-title" required>
+    <input type="text" id="quiz-title" name="quizTitle" required>
     
     <label for="quiz-description">Description:</label>
-    <textarea id="quiz-description" name="quiz-description" rows="4"></textarea>
+    <textarea id="quiz-description" name="quizDescription" rows="4"></textarea>
 
     <h3>Questions</h3>
 
@@ -40,7 +40,7 @@
       questionDiv.innerHTML = `
         <div id="question-line${questionCount}">
           <label for="question${questionCount}">Question ${questionCount}:</label>
-          <input type="text" id="question${questionCount}" name="question${questionCount}" required>
+          <input type="text" id="question${questionCount}" name="questions[${questionCount}][questionText]" required>
 
           <div id="answers-container${questionCount}">
             ${renderAnswerInput(questionCount, 1)}
@@ -58,7 +58,7 @@
       return `
         <div>
           <label for="answer${questionNumber}-${answerNumber}">Answer ${answerNumber}:</label>
-          <input type="text" id="answer${questionNumber}-${answerNumber}" name="answer${questionNumber}-${answerNumber}" required>
+          <input type="text" id="answer${questionNumber}-${answerNumber}" name="questions[${questionNumber}][answers][${answerNumber - 1}][answerText]" required>
           <button type="button" onclick="removeAnswer(${questionNumber}, ${answerNumber})">Remove Answer</button>
         </div>
       `;
@@ -93,6 +93,7 @@
           button.setAttribute('onclick', `removeAnswer(${questionNumber}, ${answerIndex + 1})`);
         });
         line.querySelector('button[onclick^="addAnswer"]').setAttribute('onclick', `addAnswer(${questionNumber})`);
+        line.querySelector('button[onclick^="removeQuestion"]').setAttribute('onclick', `removeQuestion(${questionNumber})`);
       });
     }
 
@@ -135,14 +136,6 @@
       });
     }
 
-    function createQuiz(event) {
-      event.preventDefault();
-
-      // Implement quiz creation logic here
-      // Gather data from the form and send it to the server
-      // This is a basic example and needs further implementation based on your server structure
-      alert('Quiz created! Implement the creation logic.');
-    }
   </script>
 
 </body>

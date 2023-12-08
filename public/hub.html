@@ -64,9 +64,10 @@
 </head>
 <body>
 
-<header>
-    <h1>Quiz Hub</h1>
-</header>
+    <header>
+        <h1>Quiz Hub</h1>
+        <div id="user-info"></div> <!-- New div to display user information -->
+    </header>
 
 <nav>
     <a href="/">Home</a>
@@ -85,7 +86,8 @@
     <script>
         document.addEventListener("DOMContentLoaded", async function () {
             const quizListContainer = document.getElementById('quiz-list-container');
-
+            const userInfoContainer = document.getElementById('user-info'); // New line
+    
             // Fetch quizzes from the server (you need to implement this endpoint in your Node.js server)
             const response = await fetch('/api/quizzes');
             const quizzes = await response.json();
@@ -97,19 +99,27 @@
                 quizItem.innerHTML = `<h3>${quiz.title}</h3><p>${quiz.description}</p>`;
                 quizListContainer.appendChild(quizItem);
             });
-
+    
             // Add search functionality (you may need to implement this)
             const searchInput = document.getElementById('search-input');
             searchInput.addEventListener('input', handleSearch);
-
+    
+            // Check if user is logged in and display username
+            const user = await fetch('/api/user'); // Assuming you have an endpoint to fetch user details
+            const userData = await user.json();
+    
+            if (userData.username) {
+                userInfoContainer.innerText = `Welcome, ${userData.username}!`; // Display username
+            }
+    
             function handleSearch() {
                 const searchTerm = searchInput.value.toLowerCase();
                 const quizItems = document.querySelectorAll('.quiz-item');
-
+    
                 quizItems.forEach(item => {
                     const quizTitle = item.querySelector('h3').innerText.toLowerCase();
                     const quizDescription = item.querySelector('p').innerText.toLowerCase();
-
+    
                     if (quizTitle.includes(searchTerm) || quizDescription.includes(searchTerm)) {
                         item.style.display = 'block';
                     } else {
@@ -119,6 +129,7 @@
             }
         });
     </script>
+    
 </section>
 
 </body>

@@ -30,6 +30,7 @@
   </form>
 
   <script>
+    
     let questionCount = 0;
 
     function addQuestion() {
@@ -50,32 +51,32 @@
       `;
       questionsContainer.appendChild(questionDiv);
       updateQuestionNumbers();
-      updateSubmitButton(); // Add this line to enable/disable submit button
+      updateSubmitButton();
       questionCount++;
     }
 
     function renderAnswerInput(questionNumber, answerNumber) {
-      return `
-        <div>
-          <label for="answer${questionNumber}-${answerNumber}">Answer ${answerNumber}:</label>
-          <input type="text" id="answer${questionNumber}-${answerNumber}" name="questions[${questionNumber}][answers][${answerNumber - 1}][answerText]" required>
-          <input type="checkbox" id="correctAnswer${questionNumber}-${answerNumber}" name="questions[${questionNumber}][answers][${answerNumber - 1}][isCorrect]">
-          <label for="correctAnswer${questionNumber}-${answerNumber}">Correct Answer</label>
-          <button type="button" onclick="removeAnswer(${questionNumber}, ${answerNumber})">Remove Answer</button>
-        </div>
-      `;
-    }
+  return `
+    <div>
+      <label for="answer${questionNumber}-${answerNumber}">Answer ${answerNumber}:</label>
+      <input type="text" id="answer${questionNumber}-${answerNumber}" name="questions[${questionNumber}][answers][${answerNumber - 1}][answerText]" required>
+      <input type="checkbox" id="correctAnswer${questionNumber}-${answerNumber}" name="questions[${questionNumber}][answers][${answerNumber - 1}][isCorrect]">
+      <label for="correctAnswer${questionNumber}-${answerNumber}">Correct Answer</label>
+      <button type="button" onclick="removeAnswer(${questionNumber}, ${answerNumber})">Remove Answer</button>
+    </div>
+  `;
+}
 
     function removeQuestion(questionNumber) {
-  const questionLine = document.getElementById(`question-line${questionNumber}`);
-  if (questionLine) {
-    questionLine.parentNode.removeChild(questionLine);
-    updateQuestionNumbers();
-    updateAnswerNumbers();
-    updateSubmitButton(); // Add this line to enable/disable submit button
-  }
-  questionCount--;
-}
+      const questionLine = document.getElementById(`question-line${questionNumber}`);
+      if (questionLine) {
+        questionLine.parentNode.removeChild(questionLine);
+        updateQuestionNumbers();
+        updateAnswerNumbers();
+        updateSubmitButton();
+      }
+      questionCount--;
+    }
 
     function updateQuestionNumbers() {
       const questionLines = document.querySelectorAll('[id^="question-line"]');
@@ -84,14 +85,14 @@
         line.id = `question-line${questionNumber}`;
         line.querySelector('label[for^="question"]').textContent = `Question ${questionNumber}`;
         line.querySelector('input[id^="question"]').id = `question${questionNumber}`;
-        line.querySelector('input[name^="question"]').name = `question${questionNumber}`;
+        line.querySelector('input[name^="questions"]').name = `questions[${questionNumber}][questionText]`;
         line.querySelector('div[id^="answers-container"]').id = `answers-container${questionNumber}`;
         line.querySelectorAll('label[for^="answer"]').forEach((label, answerIndex) => {
           label.textContent = `Answer ${answerIndex + 1}:`;
         });
         line.querySelectorAll('input[id^="answer"]').forEach((input, answerIndex) => {
           input.id = `answer${questionNumber}-${answerIndex + 1}`;
-          input.name = `answer${questionNumber}-${answerIndex + 1}`;
+          input.name = `questions[${questionNumber}][answers][${answerIndex}][answerText]`;
         });
         line.querySelectorAll('button[onclick^="removeAnswer"]').forEach((button, answerIndex) => {
           button.setAttribute('onclick', `removeAnswer(${questionNumber}, ${answerIndex + 1})`);
@@ -107,7 +108,6 @@
       const nextAnswerNumber = existingAnswerInputs.length + 1;
       const newAnswerInput = document.createElement('div');
       newAnswerInput.innerHTML = renderAnswerInput(questionNumber, nextAnswerNumber);
-      // Insert the new answer input above the "Add Answer" button
       answersContainer.insertBefore(newAnswerInput, answersContainer.lastElementChild);
       updateAnswerNumbers();
     }
@@ -117,7 +117,6 @@
       const existingAnswerInputs = answersContainer.querySelectorAll('label[for^="answer"]');
       const nextAnswerNumber = existingAnswerInputs.length - 1;
 
-      // Check if there are at least 2 answers remaining before removal
       if (nextAnswerNumber >= 2) {
         const answerId = `answer${questionNumber}-${answerNumber}`;
         const answerInput = document.getElementById(answerId);
@@ -126,7 +125,7 @@
           const answerContainer = answerInput.parentNode;
           answerContainer.parentNode.removeChild(answerContainer);
           updateAnswerNumbers();
-          updateSubmitButton(); // Add this line to enable/disable submit button
+          updateSubmitButton();
         }
       } else {
         alert('You must have at least 2 answers for a question.');
@@ -142,7 +141,7 @@
         });
         line.querySelectorAll('input[id^="answer"]').forEach((input, answerIndex) => {
           input.id = `answer${questionNumber}-${answerIndex + 1}`;
-          input.name = `answer${questionNumber}-${answerIndex + 1}`;
+          input.name = `questions[${questionNumber}][answers][${answerIndex}][answerText]`;
         });
         line.querySelectorAll('button[onclick^="removeAnswer"]').forEach((button, answerIndex) => {
           button.setAttribute('onclick', `removeAnswer(${questionNumber}, ${answerIndex + 1})`);
@@ -154,7 +153,6 @@
       const submitButton = document.querySelector('[type="submit"]');
       const questionCount = document.querySelectorAll('[id^="question-line"]').length;
 
-      // Enable or disable the submit button based on the number of questions
       submitButton.disabled = questionCount === 0;
     }
 

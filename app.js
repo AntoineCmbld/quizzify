@@ -86,6 +86,8 @@ app.get('/api/quizzes', (req, res) => {
 app.post('/create-quiz', (req, res) => {
   const { quizTitle, quizDescription, questions } = req.body;
 
+  console.log('Received data:', { quizTitle, quizDescription, questions });
+
   // Check if 'questions' is an array
   if (!Array.isArray(questions)) {
     return res.status(400).send('Invalid format for questions array');
@@ -125,9 +127,9 @@ app.post('/create-quiz', (req, res) => {
         // Insert answer data into the database
         answers.forEach((answer) => {
           const { answerText, isCorrect } = answer;
+          const isCorrectValue = isCorrect === 'on' ? 1 : 0; // Convert checkbox value to 1 or 0
           const insertAnswerQuery = 'INSERT INTO options (question_id, option_text, is_correct) VALUES (?, ?, ?)';
-          // Set the 'is_correct' field based on your logic
-          db.query(insertAnswerQuery, [questionId, answerText, isCorrect], (err) => {
+          db.query(insertAnswerQuery, [questionId, answerText, isCorrectValue], (err) => {
             if (err) {
               console.error('Error creating answer:', err);
               return res.status(500).send('Error creating answer');
@@ -140,6 +142,7 @@ app.post('/create-quiz', (req, res) => {
     res.send('Quiz created successfully!');
   });
 });
+
 app.post('/submit-quiz', (req, res) => {
   // Implement quiz submission logic on the server
   // You can access the user's responses from req.body

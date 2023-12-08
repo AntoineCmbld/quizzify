@@ -53,14 +53,51 @@ app.get('/take-quiz', (req, res) => {
   res.sendFile(__dirname + '/public/take-quiz.html');
 });
 
+app.get('/api/user', (req, res) => {
+  if (req.session.user) {
+    const { id, username, role } = req.session.user;
+    res.json({ id, username, role });
+  } else {
+    res.status(401).json({ error: 'Not authenticated' });
+  }
+});
+
+app.get('/api/quizzes', (req, res) => {
+  const selectQuizzesQuery = 'SELECT * FROM quizzes';
+  db.query(selectQuizzesQuery, (err, results) => {
+    if (err) {
+      console.error('Error fetching quizzes:', err);
+      return res.status(500).send('Error fetching quizzes');
+    }
+
+    const quizzes = results.map(quiz => ({
+      id: quiz.quiz_id,
+      title: quiz.title,
+      description: quiz.description,
+      instructorId: quiz.instructor_id
+      // Add more fields as needed
+    }));
+
+    res.json(quizzes);
+  });
+});
+
 // Implement routes for handling quiz creation and submission on the server
-// Example routes; replace these with your actual server-side logic
 app.post('/create-quiz', (req, res) => {
   const { quizTitle, quizDescription, questions } = req.body;
 
+  console.log('Received data:', { quizTitle, quizDescription, questions });
+
+  // Check if 'questions' is an array
+  if (!Array.isArray(questions)) {
+    return res.status(400).send('Invalid format for questions array');
+  }
+
   // Insert quiz data into the database
   const insertQuizQuery = 'INSERT INTO quizzes (title, description, instructor_id) VALUES (?, ?, ?)';
-  db.query(insertQuizQuery, [quizTitle, quizDescription, /* instructor_id - You need to set this based on your logic */], (err, result) => {
+  // Assuming the instructor ID is stored in the session when the user logs in
+  const instructorId = req.session.user.id;
+  db.query(insertQuizQuery, [quizTitle, quizDescription, instructorId], (err, result) => {
     if (err) {
       console.error('Error creating quiz:', err);
       return res.status(500).send('Error creating quiz');
@@ -72,9 +109,14 @@ app.post('/create-quiz', (req, res) => {
     questions.forEach((question) => {
       const { questionText, answers } = question;
 
+      // Check if 'answers' is an array
+      if (!Array.isArray(answers)) {
+        return res.status(400).send('Invalid format for answers array');
+      }
+
       // Insert question data into the database
-      const insertQuestionQuery = 'INSERT INTO questions (quiz_id, question_text, question_type) VALUES (?, ?, ?)';
-      db.query(insertQuestionQuery, [quizId, questionText, /* question_type - You need to set this based on your logic */], (err, result) => {
+      const insertQuestionQuery = 'INSERT INTO questions (quiz_id, question_text) VALUES (?, ?)';
+      db.query(insertQuestionQuery, [quizId, questionText], (err, result) => {
         if (err) {
           console.error('Error creating question:', err);
           return res.status(500).send('Error creating question');
@@ -84,10 +126,10 @@ app.post('/create-quiz', (req, res) => {
 
         // Insert answer data into the database
         answers.forEach((answer) => {
-          const { answerText } = answer;
-          const insertAnswerQuery = 'INSERT INTO answers (question_id, answer_text, is_correct) VALUES (?, ?, ?)';
-          // Set the 'is_correct' field based on your logic
-          db.query(insertAnswerQuery, [questionId, answerText, /* is_correct - You need to set this based on your logic */], (err) => {
+          const { answerText, isCorrect } = answer;
+          const isCorrectValue = isCorrect === 'on' ? 1 : 0; // Convert checkbox value to 1 or 0
+          const insertAnswerQuery = 'INSERT INTO options (question_id, option_text, is_correct) VALUES (?, ?, ?)';
+          db.query(insertAnswerQuery, [questionId, answerText, isCorrectValue], (err) => {
             if (err) {
               console.error('Error creating answer:', err);
               return res.status(500).send('Error creating answer');
@@ -142,7 +184,13 @@ app.post('/login', async (req, res) => {
       return res.status(401).send('Invalid username or password');
     }
 
-    req.session.user = username;
+    // Set the session variable
+    req.session.user = {
+      id: results[0].user_id,
+      username: results[0].username,
+      role: results[0].role
+    };
+
     res.redirect('/hub'); // Redirect to your dashboard page
   });
 });

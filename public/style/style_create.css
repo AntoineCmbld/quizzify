@@ -4,6 +4,9 @@ body {
     color: #fff;
     margin: 0;
     padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 header {
@@ -11,12 +14,17 @@ header {
     padding: 10px;
     text-align: center;
     color: #ac1db9;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 nav {
     background-color: #7e1588;
     overflow: hidden;
     border-radius: 5px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 15px;
 }
 
 nav a {
@@ -38,22 +46,57 @@ nav a:hover {
     text-decoration: none;
 }
 
-section {
-    padding: 20px;
+h2 {
+    text-align: center;
+    color: #fff;
 }
 
-#quiz-list-container {
-    display: grid;
-    gap: 20px;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+form {
+    max-width: 600px;
+    width: 100%;
 }
 
-.quiz-item {
-    border: 1px solid #ddd;
+label {
+    display: block;
+    color: #fff;
+    margin-bottom: 5px;
+}
+
+textarea {
+    width: 100%;
     padding: 10px;
+    margin: 15px 0px;
+    box-sizing: border-box;
+    background-color: #202020;
+    border: 2px solid #ac1db9;
     border-radius: 5px;
-    background-color: #f9f9f9;
-    color : #202020;
+    color: #fff;
+}
+
+button {
+    padding: 10px;
+    background-color: #7e1588;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #ac1db9;
+}
+
+#questions-container {
+    margin-top: 20px;
+}
+
+#questions-container div {
+    margin-bottom: 20px;
+}
+
+input[type="checkbox"] {
+    margin-right: 5px;
 }
 
 input[type="text"] {
@@ -66,4 +109,3 @@ input[type="text"] {
     border-radius: 5px;
     color: #fff;
 }
-

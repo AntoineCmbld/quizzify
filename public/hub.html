@@ -9,27 +9,19 @@
 <body>
 
     <header>
-        <h1>Quiz Hub</h1>
-        <div id="user-info"></div> <!-- New div to display user information -->
+        <img src="/assets/Quizzify_logo.png" alt="Quizzify_logo">
+        <div id="user-info"></div>
     </header>
 
 <nav>
-    <a href="/">Home</a>
-    <a href="/register">Register</a>
-    <a href="/login">Login</a>
-    <a href="/dashboard">Dashboard</a>
-    <a href="/hub">Quiz Hub</a>
+    <a class= nav_button href="/">Home</a>
         <!-- Button to create quiz (visible for instructors) -->
-    <a href="/create-quiz" id="create-quiz-btn" style="display: none;">Create Quiz</a>
+    <a class= nav_button href="/create-quiz" id="create-quiz-btn" style="display: none;">Create Quiz</a>
 </nav>
 
 <section>
-    <div id="quiz-list-container"></div>
-
-    <!-- Search bar -->
     <input type="text" id="search-input" placeholder="Search quizzes...">
-
-
+    <div id="quiz-list-container"></div>
     <script>
         document.addEventListener("DOMContentLoaded", async function () {
         const quizListContainer = document.getElementById('quiz-list-container');
@@ -65,7 +57,7 @@
     
                 // Check if the user is an instructor and show the create quiz button
                 if (userData.role === 'instructor') {
-                    createQuizBtn.style.display = 'block';
+                    createQuizBtn.style.display = 'inline-block';
                     createQuizBtn.addEventListener('click', () => {
                         // Redirect to the create quiz page or handle the creation logic
                         window.location.href = '/create-quiz';

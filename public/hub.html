@@ -37,7 +37,7 @@
             const quizItem = document.createElement('div');
             quizItem.classList.add('quiz-item');
             quizItem.innerHTML = `
-                <h3>${quiz.title}</h3>
+                <h2>${quiz.title}</h2>
                 <p>${quiz.description}</p>
                 <a href="/quiz/${quiz.id}">Take Quiz</a> <!-- Add link to quiz-taking page -->
             `;
@@ -70,7 +70,7 @@
                 const quizItems = document.querySelectorAll('.quiz-item');
     
                 quizItems.forEach(item => {
-                    const quizTitle = item.querySelector('h3').innerText.toLowerCase();
+                    const quizTitle = item.querySelector('h2').innerText.toLowerCase();
                     const quizDescription = item.querySelector('p').innerText.toLowerCase();
     
                     if (quizTitle.includes(searchTerm) || quizDescription.includes(searchTerm)) {

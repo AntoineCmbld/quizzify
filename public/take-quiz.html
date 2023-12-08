@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Page</title>
+  <style>
+    /* Add your styles here */
+  </style>
+</head>
+<body>
+
+  <div id="quiz-container">
+    <h2 id="quiz-title"></h2>
+    <p id="quiz-description"></p>
+
+    <div id="questions-container"></div>
+
+    <button onclick="submitQuiz()">Submit Quiz</button>
+  </div>
+
+  <script>
+    // Fetch quiz data from the server
+    // You can use fetch or any other method to get data from your server
+    // Replace this with actual API call based on your server implementation
+    const quizData = {
+      title: "Sample Quiz",
+      description: "This is a sample quiz for testing purposes.",
+      questions: [
+        {
+          question_id: 1,
+          question_text: "What is 2 + 2?",
+          question_type: "multiple_choice",
+          choices: ["3", "4", "5", "6"]
+        },
+        {
+          question_id: 2,
+          question_text: "Is the sky blue?",
+          question_type: "true_false"
+        }
+      ]
+    };
+
+    // Populate quiz details
+    document.getElementById('quiz-title').textContent = quizData.title;
+    document.getElementById('quiz-description').textContent = quizData.description;
+
+    // Populate questions
+    const questionsContainer = document.getElementById('questions-container');
+    quizData.questions.forEach((question, index) => {
+      const questionElement = document.createElement('div');
+      questionElement.innerHTML = `
+        <p>${index + 1}. ${question.question_text}</p>
+        ${question.question_type === 'multiple_choice' ? renderMultipleChoice(question) : renderTrueFalse(question)}
+      `;
+      questionsContainer.appendChild(questionElement);
+    });
+
+    function renderMultipleChoice(question) {
+      return question.choices.map(choice => `
+        <label>
+          <input type="radio" name="question${question.question_id}" value="${choice}">
+          ${choice}
+        </label>
+      `).join('');
+    }
+
+    function renderTrueFalse(question) {
+      return `
+        <label>
+          <input type="radio" name="question${question.question_id}" value="true">
+          True
+        </label>
+        <label>
+          <input type="radio" name="question${question.question_id}" value="false">
+          False
+        </label>
+      `;
+    }
+
+    function submitQuiz() {
+      // Implement quiz submission logic here
+      // You can use JavaScript to gather user responses and send them to the server
+      // This is a basic example and needs further implementation based on your server structure
+      alert('Quiz submitted! Implement the submission logic.');
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Hub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #333;
+            padding: 10px;
+            text-align: center;
+            color: white;
+        }
+
+        nav {
+            background-color: #444;
+            overflow: hidden;
+        }
+
+        nav a {
+            float: left;
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+
+        nav a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+
+        section {
+            padding: 20px;
+        }
+
+        #quiz-list-container {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        }
+
+        .quiz-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Quiz Hub</h1>
+</header>
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/register">Register</a>
+    <a href="/login">Login</a>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/hub">Quiz Hub</a>
+</nav>
+
+<section>
+    <div id="quiz-list-container"></div>
+
+    <!-- Search bar -->
+    <input type="text" id="search-input" placeholder="Search quizzes...">
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            const quizListContainer = document.getElementById('quiz-list-container');
+
+            // Fetch quizzes from the server (you need to implement this endpoint in your Node.js server)
+            const response = await fetch('/api/quizzes');
+            const quizzes = await response.json();
+
+            // Display quizzes in the container
+            quizzes.forEach(quiz => {
+                const quizItem = document.createElement('div');
+                quizItem.classList.add('quiz-item');
+                quizItem.innerHTML = `<h3>${quiz.title}</h3><p>${quiz.description}</p>`;
+                quizListContainer.appendChild(quizItem);
+            });
+
+            // Add search functionality (you may need to implement this)
+            const searchInput = document.getElementById('search-input');
+            searchInput.addEventListener('input', handleSearch);
+
+            function handleSearch() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const quizItems = document.querySelectorAll('.quiz-item');
+
+                quizItems.forEach(item => {
+                    const quizTitle = item.querySelector('h3').innerText.toLowerCase();
+                    const quizDescription = item.querySelector('p').innerText.toLowerCase();
+
+                    if (quizTitle.includes(searchTerm) || quizDescription.includes(searchTerm)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            }
+        });
+    </script>
+</section>
+
+</body>
+</html>

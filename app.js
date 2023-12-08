@@ -82,12 +82,82 @@ app.get('/api/quizzes', (req, res) => {
   });
 });
 
+// New route for fetching quiz details by ID
+app.get('/api/quiz/:quizId', (req, res) => {
+  const quizId = req.params.quizId;
+
+  // Retrieve quiz details from the database
+  const selectQuizQuery = 'SELECT * FROM quizzes WHERE quiz_id = ?';
+  db.query(selectQuizQuery, [quizId], (err, results) => {
+    if (err) {
+      console.error('Error fetching quiz details:', err);
+      return res.status(500).send('Error fetching quiz details');
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'Quiz not found' });
+    }
+    
+    const quizDetails = {
+      id: results[0].quiz_id,
+      title: results[0].title,
+      description: results[0].description,
+      instructorId: results[0].instructor_id
+      // Add more fields as needed
+    };
+
+    // Retrieve questions associated with the quiz
+    const selectQuestionsQuery = 'SELECT * FROM questions WHERE quiz_id = ?';
+    db.query(selectQuestionsQuery, [quizId], (err, questionResults) => {
+      if (err) {
+        console.error('Error fetching questions:', err);
+        return res.status(500).send('Error fetching questions');
+      }
+
+      const questions = questionResults.map(question => ({
+        question_id: question.question_id,
+        question_text: question.question_text
+        // Add more fields as needed
+      }));
+
+      quizDetails.questions = questions;
+
+      // Retrieve options (answers) associated with each question
+      const selectOptionsQuery = 'SELECT * FROM options WHERE question_id = ?';
+      const optionsPromises = questions.map(question => new Promise((resolve, reject) => {
+        db.query(selectOptionsQuery, [question.question_id], (err, optionResults) => {
+          if (err) {
+            console.error('Error fetching options:', err);
+            reject(err);
+          } else {
+            const options = optionResults.map(option => ({
+              option_id: option.option_id,
+              option_text: option.option_text,
+              is_correct: option.is_correct
+              // Add more fields as needed
+            }));
+            question.options = options;
+            resolve();
+          }
+        });
+      }));
+
+      Promise.all(optionsPromises)
+        .then(() => {
+          res.json(quizDetails);
+        })
+        .catch(() => {
+          res.status(500).send('Error fetching options');
+        });
+    });
+  });
+});
+
 // Implement routes for handling quiz creation and submission on the server
 app.post('/create-quiz', (req, res) => {
   const { quizTitle, quizDescription, questions } = req.body;
 
   console.log('Received data:', { quizTitle, quizDescription, questions });
-
   // Check if 'questions' is an array
   if (!Array.isArray(questions)) {
     return res.status(400).send('Invalid format for questions array');
@@ -107,7 +177,7 @@ app.post('/create-quiz', (req, res) => {
 
     // Insert questions and answers into the database
     questions.forEach((question) => {
-      const { questionText, answers } = question;
+      const { questionText, answers, correctAnswer } = question;
 
       // Check if 'answers' is an array
       if (!Array.isArray(answers)) {
@@ -125,9 +195,10 @@ app.post('/create-quiz', (req, res) => {
         const questionId = result.insertId; // Get the ID of the newly inserted question
 
         // Insert answer data into the database
-        answers.forEach((answer) => {
-          const { answerText, isCorrect } = answer;
-          const isCorrectValue = isCorrect === 'on' ? 1 : 0; // Convert checkbox value to 1 or 0
+        answers.forEach((answer, index) => {
+          const { answerText } = answer;
+          const isCorrectValue = correctAnswer && correctAnswer.includes(index.toString()) ? 1 : 0;
+    
           const insertAnswerQuery = 'INSERT INTO options (question_id, option_text, is_correct) VALUES (?, ?, ?)';
           db.query(insertAnswerQuery, [questionId, answerText, isCorrectValue], (err) => {
             if (err) {
@@ -144,10 +215,12 @@ app.post('/create-quiz', (req, res) => {
 });
 
 app.post('/submit-quiz', (req, res) => {
-  // Implement quiz submission logic on the server
-  // You can access the user's responses from req.body
-  // This is a basic example and needs further implementation based on your server structure
   res.send('Quiz submitted successfully!');
+});
+
+app.get('/quiz/:quizId', (req, res) => {
+  const quizId = req.params.quizId;
+  res.sendFile(__dirname + '/public/take-quiz.html');
 });
 
 app.post('/register', async (req, res) => {

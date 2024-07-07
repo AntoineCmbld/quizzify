@@ -6,4 +6,4 @@ There are 2 types of users:\
 \
 For now, you can select your role when creating an account\
 \
-All passwords are hashed\
+All passwords are hashed

@@ -1,6 +1,6 @@
 # Quizzify
 
-## Quizzify is a website designed for teachers to easily create and share quizzes online. \
+## Quizzify is a website designed for teachers to easily create and share quizzes online.
 
 \
 There are 2 types of users:\
